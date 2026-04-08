@@ -29,7 +29,13 @@ export interface Product {
   createdAt: string; // ISO 8601 timestamp
 }
 
-// LineItem
+// Cart Item for frontend
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+// LineItem for API
 export interface LineItem {
   id: number;
   purchaseId: number;
@@ -54,4 +60,23 @@ export interface PurchaseCreateDTO {
   stripeSessionId: string;
   purchaseTotal: number;
   lineItems: Omit<LineItem, 'id' | 'purchaseId'>[];
+}
+
+export interface ProductCreateDTO {
+  name: string;
+  price: number;
+  category: string;
+  attunement: boolean;
+  type: string;
+  die: number;
+  ac: number;
+  bonus: number;
+  charges: number;
+  rarity: Rarity;
+  description: string;
+  image: string;
+  properties: Array<{
+    propertyName: string;
+    propertyDescription: string;
+  }>;
 }
