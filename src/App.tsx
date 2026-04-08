@@ -1,10 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
-import Home from './components/Home';
-import Cart from './components/Cart';
-import Checkout from './components/Checkout';
-import Confirmation from './components/Confirmation';
+import Home from './pages/Home';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import Confirmation from './pages/Confirmation';
 
 function App() {
   return (
