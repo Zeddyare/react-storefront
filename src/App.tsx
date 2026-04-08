@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Confirmation from './pages/Confirmation';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/confirmation" element={<Confirmation />} />
+        { /* Admin Route is hidden */ }
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </Router>
   );
