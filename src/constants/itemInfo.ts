@@ -17,5 +17,5 @@ export const getFieldLocks = (category: Category | '') => {
         dieLocked: category !== 'Weapon',
         acLocked: category !== 'Armor',
         bonusLocked: category === 'Potion',
-    } 
-}
+    }; 
+};

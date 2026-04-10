@@ -238,6 +238,20 @@
   background: rgba(181, 42, 42, 0.2);
 }
 
+.locked-badge {
+  font-size: 0.85em;
+  color: var(--arcane, #9d6bff);
+  font-style: italic;
+  margin-left: 0.5rem;
+}
+
+select:disabled,
+input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--parchment, #f4e8d8);
+}
+
 @media (max-width: 760px) {
   .catalogue-panel-header {
     flex-direction: column;

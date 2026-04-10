@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Product, ProductCreateDTO, Rarity } from '../types/Item';
 import { api } from '../services/api';
 import '../styles/Admin.css';
+import { CATEGORIES, TYPES, DIE_SIZES, getFieldLocks, type Category } from '../constants/itemInfo';
 
 interface DraftProperty {
   propertyName: string;
@@ -247,20 +248,44 @@ export default function Admin() {
             </div>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="category">Category</label>
-              <input
+          <div className="form-group">
+            <label htmlFor="category">Category</label>
+            <select
                 id="category"
                 required
                 value={form.category}
-                onChange={(e) => setField('category', e.target.value)}
-              />
+                onChange={(e) => {
+                    const newCategory = e.target.value as Category;
+                    setField('category', newCategory);
+                    // Auto-lock die/ac based on category
+                    const locks = getFieldLocks(newCategory);
+                    if (locks.dieLocked) setField('die', 0);
+                    if (locks.acLocked) setField('ac', 0);
+                    // Reset type when category changes
+                    setField('type', '');
+                    }}
+                >
+                <option value="">Select Category</option>
+                {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+                ))}
+            </select>
             </div>
 
             <div className="form-group">
               <label htmlFor="type">Type</label>
-              <input id="type" required value={form.type} onChange={(e) => setField('type', e.target.value)} />
+              <select
+                id="type"
+                required
+                value={form.type}
+                onChange={(e) => setField('type', e.target.value)}
+                disabled={!form.category}
+              >
+                <option value="">Select Type</option>
+                {form.category && TYPES[form.category as Category]?.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
@@ -299,18 +324,42 @@ export default function Admin() {
             <label htmlFor="image">Image URL</label>
             <input id="image" value={form.image} onChange={(e) => setField('image', e.target.value)} />
           </div>
-        </div>
+        
 
         <div className="form-section arcane-card">
           <h2>Stats</h2>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="die">Damage Die</label>
-              <input id="die" min={0} type="number" value={form.die} onChange={(e) => setField('die', Number(e.target.value))} />
+            <label htmlFor="die">
+                Damage Die
+                {getFieldLocks(form.category as Category).dieLocked && <span className="locked-badge"> (Locked to 0)</span>}
+            </label>
+            <select
+                id="die"
+                value={form.die}
+                onChange={(e) => setField('die', Number(e.target.value))}
+                disabled={getFieldLocks(form.category as Category).dieLocked}
+            >
+                {DIE_SIZES.map((die) => (
+                <option key={die} value={die}>
+                    {die === 0 ? 'None' : `d${die}`}
+                </option>
+                ))}
+            </select>
             </div>
             <div className="form-group">
-              <label htmlFor="ac">Armor Class</label>
-              <input id="ac" min={0} type="number" value={form.ac} onChange={(e) => setField('ac', Number(e.target.value))} />
+              <label htmlFor="ac">
+                Armor Class
+                {getFieldLocks(form.category as Category).acLocked && <span className="locked-badge"></span>}
+              </label>
+              <input
+                id="ac"
+                min={0}
+                type="number"
+                value={form.ac}
+                onChange={(e) => setField('ac', Number(e.target.value))}
+                disabled={getFieldLocks(form.category as Category).acLocked}
+              />
             </div>
             <div className="form-group">
               <label htmlFor="bonus">Bonus</label>
