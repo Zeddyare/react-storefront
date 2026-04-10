@@ -17,14 +17,20 @@ export default function Checkout() {
 
   const fetchClientSecret = useCallback(async () => {
     try {
-      const data = await api.createCheckoutSession();
+      const data = await api.createCheckoutSession({
+        cartTotal: total,
+        items: items.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+      });
       return data.clientSecret;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to create Stripe session';
       setError(message);
       throw error;
     }
-  }, []);
+  }, [items, total]);
 
   const options: StripeEmbeddedCheckoutOptions = { fetchClientSecret };
 

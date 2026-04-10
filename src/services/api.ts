@@ -30,10 +30,13 @@ export const api = {
   },
 
   // Checkout
-  createCheckoutSession: async (): Promise<{ sessionId: string; clientSecret: string }> => {
+  createCheckoutSession: async (
+    payload: { cartTotal: number; items: Array<{ productId: number; quantity: number }> }
+  ): Promise<{ sessionId: string; clientSecret: string }> => {
     return fetchJson<{ sessionId: string; clientSecret: string }>(`${BASE_URL}/checkout/create-checkout-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
   },
 
