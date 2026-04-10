@@ -29,6 +29,24 @@ export const api = {
     });
   },
 
+  updateProduct: async (id: number, data: any): Promise<Product> => {
+    return fetchJson<Product>(`${BASE_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteProduct: async (id: number): Promise<void> => {
+    const res = await fetch(`${BASE_URL}/products/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const message = await res.text();
+      throw new Error(message || 'Failed to delete product');
+    }
+  },
+
   // Checkout
   createCheckoutSession: async (
     payload: { cartTotal: number; items: Array<{ productId: number; quantity: number }> }

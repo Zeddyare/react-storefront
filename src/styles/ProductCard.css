@@ -131,6 +131,14 @@
   font-weight: bold;
 }
 
+.product-actions {
+  display: flex;
+}
+
+.product-actions .btn-ghost {
+  width: 100%;
+}
+
 .add-to-cart-section {
   display: flex;
   gap: 0.8rem;

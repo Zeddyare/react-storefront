@@ -5,9 +5,10 @@ import '../styles/ProductCard.css';
 
 interface ProductCardProps {
   product: Product;
+  onViewDetails?: (product: Product) => void;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onViewDetails }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [addedFeedback, setAddedFeedback] = useState(false);
   const { addToCart } = useCart();
@@ -58,6 +59,12 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="product-footer">
           <span className="price">{product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</span>
+
+          <div className="product-actions">
+            <button className="btn-ghost" type="button" onClick={() => onViewDetails?.(product)}>
+              View Details
+            </button>
+          </div>
 
           <div className="add-to-cart-section">
             <div className="quantity-input">

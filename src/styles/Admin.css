@@ -193,3 +193,58 @@
 .product-form > .btn-arcane {
   justify-self: start;
 }
+
+.catalogue-panel {
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.catalogue-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.catalogue-panel-header h2 {
+  margin: 0;
+  color: var(--gold);
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.catalogue-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.8rem;
+}
+
+.catalogue-controls select {
+  background: rgba(13, 10, 7, 0.7);
+  border: 1px solid var(--gold-dim);
+  color: var(--parchment);
+  padding: 0.7rem;
+}
+
+.btn-ghost.danger {
+  border-color: var(--crimson-light);
+  color: var(--crimson-light);
+}
+
+.btn-ghost.danger:hover {
+  background: rgba(181, 42, 42, 0.2);
+}
+
+@media (max-width: 760px) {
+  .catalogue-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .catalogue-controls {
+    grid-template-columns: 1fr;
+  }
+}

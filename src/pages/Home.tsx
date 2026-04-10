@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import ProductCard from '../components/ProductCard';
+import ProductDetailModal from '../components/ProductDetailModal';
 import { Product } from '../types/Item';
 import { api } from '../services/api';
+import { useCart } from '../context/CartContext';
 import '../styles/Home.css';
 
 export default function Home() {
@@ -10,6 +12,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [rarity, setRarity] = useState('ALL');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -72,11 +76,28 @@ export default function Home() {
       {!loading && !error && (
         <div className="products-grid">
           {visibleProducts.length > 0 ? (
-            visibleProducts.map((item) => <ProductCard key={item.id} product={item} />)
+            visibleProducts.map((item) => (
+              <ProductCard
+                key={item.id}
+                product={item}
+                onViewDetails={(product) => setSelectedProduct(product)}
+              />
+            ))
           ) : (
             <p className="no-products">No artifacts match your scrying criteria.</p>
           )}
         </div>
+      )}
+
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={(product, quantity) => {
+            addToCart(product, quantity);
+            setSelectedProduct(null);
+          }}
+        />
       )}
 
       <div className="store-blurb fade-in">

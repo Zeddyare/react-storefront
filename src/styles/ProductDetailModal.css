@@ -1,0 +1,138 @@
+.product-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 5, 3, 0.82);
+  backdrop-filter: blur(3px);
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.product-modal {
+  width: min(1000px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  border-radius: 8px;
+  padding: 1.1rem;
+  position: relative;
+}
+
+.product-modal-close {
+  position: absolute;
+  right: 0.8rem;
+  top: 0.8rem;
+  border: 1px solid var(--gold-dim);
+  background: transparent;
+  color: var(--parchment);
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.product-modal-grid {
+  display: grid;
+  grid-template-columns: 330px 1fr;
+  gap: 1rem;
+}
+
+.product-modal-image-wrap {
+  position: relative;
+  background: rgba(13, 10, 7, 0.6);
+  border: 1px solid var(--gold-dim);
+  min-height: 340px;
+}
+
+.product-modal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-modal-content h2 {
+  font-family: var(--font-display);
+  color: var(--gold-bright);
+  margin: 0;
+}
+
+.product-modal-subtitle {
+  margin-top: 0.2rem;
+  color: var(--gold-light);
+  font-family: var(--font-heading);
+}
+
+.rule-divider {
+  margin: 0.9rem 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+}
+
+.product-5e-block h3,
+.product-modal-properties h3 {
+  font-family: var(--font-heading);
+  color: var(--gold);
+  margin-bottom: 0.35rem;
+}
+
+.product-5e-block p {
+  margin: 0.35rem 0;
+}
+
+.product-stats-grid {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.65rem;
+}
+
+.product-stats-grid > div {
+  border: 1px solid rgba(138, 110, 47, 0.45);
+  background: rgba(13, 10, 7, 0.45);
+  padding: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.product-stats-grid .label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--gold);
+}
+
+.product-modal-properties {
+  margin-top: 1rem;
+}
+
+.product-modal-properties ul {
+  padding-left: 1rem;
+}
+
+.product-modal-properties li {
+  margin: 0.35rem 0;
+}
+
+.product-modal-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.product-modal-price {
+  margin-top: 0.9rem;
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  color: var(--gold-bright);
+}
+
+@media (max-width: 900px) {
+  .product-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-modal-image-wrap {
+    height: 320px;
+  }
+}
