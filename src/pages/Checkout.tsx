@@ -1,45 +1,71 @@
-import { loadStripe, StripeEmbeddedCheckoutOptions } from "@stripe/stripe-js";
-import { useCallback, useState, useEffect } from "react";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { useCallback, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { EmbeddedCheckout, EmbeddedCheckoutProvider } from '@stripe/react-stripe-js';
+import { loadStripe, StripeEmbeddedCheckoutOptions } from '@stripe/stripe-js';
+import { api } from '../services/api';
+import { useCart } from '../context/CartContext';
+import '../styles/Checkout.css';
 
 export default function Checkout() {
-  const stripePromise = loadStripe("pk_test_51T2GGJK6pnqzlaKMLIo3ACFSkattdMMnhcnnl2mf4lKYnU413WoMjmIN5y8Q802uZ3lpNcNUzYzqnd21c2kWkjKD00jEx9CEQe");
+  const { items, total } = useCart();
+  const [error, setError] = useState<string | null>(null);
+
+  const stripePromise = useMemo(() => {
+    const key = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+    return key ? loadStripe(key) : null;
+  }, []);
 
   const fetchClientSecret = useCallback(async () => {
     try {
-      console.log("Fetching client secret from http://localhost:8080/checkout/create-checkout-session");
-      const res = await fetch("http://localhost:8080/checkout/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      
-      if (!res.ok) {
-        console.error(`Fetch failed with status ${res.status}: ${res.statusText}`);
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      const data = await res.json();
-      console.log("Client secret retrieved successfully");
+      const data = await api.createCheckoutSession();
       return data.clientSecret;
     } catch (error) {
-      console.error("Error fetching client secret:", error);
+      const message = error instanceof Error ? error.message : 'Unable to create Stripe session';
+      setError(message);
       throw error;
     }
   }, []);
 
-  const options: StripeEmbeddedCheckoutOptions = {fetchClientSecret};
+  const options: StripeEmbeddedCheckoutOptions = { fetchClientSecret };
+
+  if (items.length === 0) {
+    return (
+      <section className="checkout-container">
+        <h1>Arcane Checkout</h1>
+        <div className="checkout-empty arcane-card">
+          <p>No relics selected yet.</p>
+          <Link className="btn-arcane" to="/">Return to Catalogue</Link>
+        </div>
+      </section>
+    );
+  }
+
+  if (!stripePromise) {
+    return (
+      <section className="checkout-container">
+        <h1>Arcane Checkout</h1>
+        <p className="error-message">
+          Stripe key is missing. Add REACT_APP_STRIPE_PUBLISHABLE_KEY to storefront/.env.
+        </p>
+      </section>
+    );
+  }
 
   return (
-     <div id="checkout">
-      <EmbeddedCheckoutProvider
-        stripe={stripePromise}
-        options={options}
-      >
-        <EmbeddedCheckout />
-      </EmbeddedCheckoutProvider>
-    </div>
+    <section className="checkout-container">
+      <header className="checkout-header fade-in">
+        <h1>Arcane Checkout</h1>
+        <p>Complete secure payment through Stripe and seal your order.</p>
+        <p className="checkout-total">Cart subtotal: ${total.toFixed(2)}</p>
+      </header>
+
+      {error && <p className="error-message">{error}</p>}
+
+      <div id="checkout" className="checkout-embed arcane-card">
+        <EmbeddedCheckoutProvider stripe={stripePromise} options={options}>
+          <EmbeddedCheckout />
+        </EmbeddedCheckoutProvider>
+      </div>
+    </section>
   );
 }

@@ -21,7 +21,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="arcane-card product-card fade-in">
       <div className="product-image-container">
-        <img src={product.image} alt={product.name} className="product-image" />
+        <img
+          src={product.image || 'https://placehold.co/420x560/191207/e8d9be?text=No+Illustration'}
+          alt={product.name}
+          className="product-image"
+          loading="lazy"
+        />
         <span className={`rarity-badge rarity-${product.rarity}`}>
           {product.rarity}
         </span>
@@ -36,7 +41,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <p className="attunement-badge">⚡ Requires Attunement</p>
         )}
 
-        {product.itemProperties.length > 0 && (
+        {product.itemProperties?.length > 0 && (
           <div className="properties">
             <p className="properties-label">Properties:</p>
             <ul className="properties-list">

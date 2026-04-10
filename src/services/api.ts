@@ -1,61 +1,66 @@
 import { Product, Purchase, PurchaseCreateDTO } from '../types/Item';
 
-const BASE_URL = process.env.api_baseurl || 'http://localhost:8080';
+const BASE_URL = process.env.REACT_APP_API_BASEURL || 'http://localhost:8080';
+
+const fetchJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
+  const res = await fetch(url, init);
+  if (!res.ok) {
+    const message = await res.text();
+    throw new Error(message || `Request failed: ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+};
 
 export const api = {
   // Products
   getProducts: async (): Promise<Product[]> => {
-    const res = await fetch(`${BASE_URL}/products`);
-    if (!res.ok) throw new Error('Failed to fetch products');
-    return res.json();
+    return fetchJson<Product[]>(`${BASE_URL}/products`);
   },
 
   getProduct: async (id: number): Promise<Product> => {
-    const res = await fetch(`${BASE_URL}/products/${id}`);
-    if (!res.ok) throw new Error('Product not found');
-    return res.json();
+    return fetchJson<Product>(`${BASE_URL}/products/${id}`);
   },
 
   createProduct: async (data: any): Promise<Product> => {
-    const res = await fetch(`${BASE_URL}/products/with-properties`, {
+    return fetchJson<Product>(`${BASE_URL}/products/with-properties`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to create product');
-    return res.json();
   },
 
   // Checkout
   createCheckoutSession: async (): Promise<{ sessionId: string; clientSecret: string }> => {
-    const res = await fetch(`${BASE_URL}/checkout/create-checkout-session`, {
+    return fetchJson<{ sessionId: string; clientSecret: string }>(`${BASE_URL}/checkout/create-checkout-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
-    if (!res.ok) throw new Error('Failed to create checkout session');
-    return res.json();
   },
 
   getSessionStatus: async (sessionId: string): Promise<{ status: string }> => {
-    const res = await fetch(`${BASE_URL}/checkout/session-status?sessionId=${sessionId}`);
-    if (!res.ok) throw new Error('Failed to get session status');
-    return res.json();
+    return fetchJson<{ status: string }>(`${BASE_URL}/checkout/session-status?sessionId=${encodeURIComponent(sessionId)}`);
   },
 
   // Purchases
   createPurchase: async (data: PurchaseCreateDTO): Promise<Purchase> => {
-    const res = await fetch(`${BASE_URL}/purchases`, {
+    return fetchJson<Purchase>(`${BASE_URL}/purchases`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to create purchase');
-    return res.json();
   },
 
   getPurchaseByStripeSession: async (stripeSessionId: string): Promise<Purchase> => {
-    const res = await fetch(`${BASE_URL}/purchases/stripe/${stripeSessionId}`);
-    if (!res.ok) throw new Error('Purchase not found');
-    return res.json();
+    return fetchJson<Purchase>(`${BASE_URL}/purchases/stripe/${encodeURIComponent(stripeSessionId)}`);
+  },
+
+  chat: async (message: string, conversationId: string): Promise<string> => {
+    const params = new URLSearchParams({ message, conversationId });
+    const res = await fetch(`${BASE_URL}/chat?${params.toString()}`);
+    if (!res.ok) {
+      const error = await res.text();
+      throw new Error(error || 'Chat request failed');
+    }
+    return res.text();
   },
 };

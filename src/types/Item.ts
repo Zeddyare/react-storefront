@@ -59,7 +59,10 @@ export interface Purchase {
 export interface PurchaseCreateDTO {
   stripeSessionId: string;
   purchaseTotal: number;
-  lineItems: Omit<LineItem, 'id' | 'purchaseId'>[];
+  lineItems: Array<{
+    productId: number;
+    quantity: number;
+  }>;
 }
 
 export interface ProductCreateDTO {
