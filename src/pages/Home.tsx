@@ -100,13 +100,6 @@ export default function Home() {
         />
       )}
 
-      <div className="store-blurb fade-in">
-        <h2>Why Arcana Vault?</h2>
-        <p>
-          Every entry in this catalogue is seeded and tracked through your database-backed Spring service,
-          so inventory and lore stay consistent across sessions.
-        </p>
-      </div>
     </section>
   );
 }
