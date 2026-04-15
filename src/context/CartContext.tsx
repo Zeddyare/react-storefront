@@ -30,7 +30,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (items.length > 0) {
-      Cookies.set(CART_COOKIE_NAME, JSON.stringify(items), { expires: 365 });
+      Cookies.set(CART_COOKIE_NAME, JSON.stringify(items), { expires: 1 });
     } else {
       Cookies.remove(CART_COOKIE_NAME);
     }
