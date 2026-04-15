@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import Cookies from 'js-cookie';
 import { CartItem, Product } from '../types/Item';
 
@@ -17,7 +17,6 @@ const CART_COOKIE_NAME = 'storefront_cart';
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Load from cookies on mount
   useEffect(() => {
     const saved = Cookies.get(CART_COOKIE_NAME);
     if (saved) {
@@ -29,7 +28,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Save to cookies whenever items change
   useEffect(() => {
     if (items.length > 0) {
       Cookies.set(CART_COOKIE_NAME, JSON.stringify(items), { expires: 365 });
@@ -38,7 +36,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items]);
 
-  const addToCart = (product: Product, quantity: number) => {
+  const addToCart = useCallback((product: Product, quantity: number) => {
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -50,35 +48,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { product, quantity }];
     });
-  };
+  }, []);
 
-  const removeFromCart = (productId: number) => {
+  const removeFromCart = useCallback((productId: number) => {
     setItems((prev) => prev.filter((item) => item.product.id !== productId));
-  };
+  }, []);
 
-  const updateQuantity = (productId: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setItems((prev) =>
-      prev.map((item) =>
+  const updateQuantity = useCallback((productId: number, quantity: number) => {
+    setItems((prev) => {
+      if (quantity <= 0) {
+        return prev.filter((item) => item.product.id !== productId);
+      }
+      return prev.map((item) =>
         item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
-  };
+      );
+    });
+  }, []);
 
-  const clearCart = () => {
-    setItems([]);
-  };
+  const clearCart = useCallback(() => {
+    setItems((prev) => (prev.length === 0 ? prev : []));
+  }, []);
 
-  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-
-  return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, total }}>
-      {children}
-    </CartContext.Provider>
+  const total = useMemo(
+    () => items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [items]
   );
+
+  const value = useMemo(
+    () => ({ items, addToCart, removeFromCart, updateQuantity, clearCart, total }),
+    [items, addToCart, removeFromCart, updateQuantity, clearCart, total]
+  );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

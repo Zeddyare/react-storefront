@@ -24,8 +24,10 @@ export default function Checkout() {
         quantity: item.quantity,
       }));
 
+      const grandTotal = total + shipping + tax;
+
       const data = await api.createCheckoutSession({
-        cartTotal: total,
+        cartTotal: grandTotal,
         items: lineItems,
       });
 
@@ -34,7 +36,7 @@ export default function Checkout() {
         `${CHECKOUT_SNAPSHOT_PREFIX}${data.sessionId}`,
         JSON.stringify({
           sessionId: data.sessionId,
-          purchaseTotal: total,
+          purchaseTotal: grandTotal,
           lineItems,
         })
       );
@@ -48,6 +50,10 @@ export default function Checkout() {
   }, [items, total]);
 
   const options: StripeEmbeddedCheckoutOptions = { fetchClientSecret };
+
+  const shipping = items.length > 0 ? 7.5 : 0;
+  const tax = total * 0.15;
+  const grandTotal = total + shipping + tax;
 
   if (items.length === 0) {
     return (
@@ -77,7 +83,10 @@ export default function Checkout() {
       <header className="checkout-header fade-in">
         <h1>Arcane Checkout</h1>
         <p>Complete secure payment through Stripe and seal your order.</p>
-        <p className="checkout-total">Cart subtotal: ${total.toFixed(2)}</p>
+        <p>Subtotal: ${total.toFixed(2)}</p>
+        <p>Shipping: ${shipping.toFixed(2)}</p>
+        <p>Tax: ${tax.toFixed(2)}</p>
+        <p className="checkout-total">Total: ${grandTotal.toFixed(2)}</p>
       </header>
 
       {error && <p className="error-message">{error}</p>}
