@@ -1,22 +1,34 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { Purchase } from '../types/Item';
 import { api } from '../services/api';
 import '../styles/Confirmation.css';
 
+const CHECKOUT_SNAPSHOT_PREFIX = 'checkout_snapshot:';
+
+type CheckoutSnapshot = {
+  sessionId: string;
+  purchaseTotal: number;
+  lineItems: Array<{ productId: number; quantity: number }>;
+};
+
 export default function Confirmation() {
-  const { items, total, clearCart } = useCart();
+  const { clearCart } = useCart();
   const [searchParams] = useSearchParams();
   const [purchase, setPurchase] = useState<Purchase | null>(null);
   const [statusText, setStatusText] = useState('PENDING');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const createAttemptedRef = useRef(false);
 
   const sessionId = useMemo(() => searchParams.get('session_id') || '', [searchParams]);
 
   useEffect(() => {
     const syncPurchase = async () => {
+      setError(null);
+      setLoading(true);
+
       if (!sessionId) {
         setError('No Stripe session was provided.');
         setLoading(false);
@@ -36,27 +48,53 @@ export default function Confirmation() {
 
         if (existingPurchase) {
           setPurchase(existingPurchase);
+          localStorage.removeItem(`${CHECKOUT_SNAPSHOT_PREFIX}${sessionId}`);
+
           if (existingPurchase.purchaseStatus === 'COMPLETED' || stripeStatus.status === 'complete') {
             clearCart();
           }
           return;
         }
 
-        if (items.length === 0) {
-          setError('Cart is empty, so we could not persist a purchase record.');
+        // Prevent duplicate create calls in StrictMode double-effect behavior.
+        if (createAttemptedRef.current) {
+          return;
+        }
+        createAttemptedRef.current = true;
+
+        const snapshotRaw = localStorage.getItem(`${CHECKOUT_SNAPSHOT_PREFIX}${sessionId}`);
+        if (!snapshotRaw) {
+          setError('Purchase record is not available yet, and no checkout snapshot was found.');
+          return;
+        }
+
+        let snapshot: CheckoutSnapshot | null = null;
+        try {
+          snapshot = JSON.parse(snapshotRaw) as CheckoutSnapshot;
+        } catch {
+          snapshot = null;
+        }
+
+        if (
+          !snapshot ||
+          snapshot.sessionId !== sessionId ||
+          typeof snapshot.purchaseTotal !== 'number' ||
+          !Array.isArray(snapshot.lineItems) ||
+          snapshot.lineItems.length === 0
+        ) {
+          setError('Checkout snapshot is invalid. Please contact support with your Stripe session id.');
           return;
         }
 
         const created = await api.createPurchase({
           stripeSessionId: sessionId,
-          purchaseTotal: total,
-          lineItems: items.map((item) => ({
-            productId: item.product.id,
-            quantity: item.quantity,
-          })),
+          purchaseTotal: snapshot.purchaseTotal,
+          lineItems: snapshot.lineItems,
         });
 
         setPurchase(created);
+        localStorage.removeItem(`${CHECKOUT_SNAPSHOT_PREFIX}${sessionId}`);
+
         if (stripeStatus.status === 'complete') {
           clearCart();
         }
@@ -69,7 +107,7 @@ export default function Confirmation() {
     };
 
     void syncPurchase();
-  }, [sessionId, items, total, clearCart]);
+  }, [sessionId, clearCart]);
 
   if (loading) {
     return (
@@ -123,7 +161,7 @@ export default function Confirmation() {
             <div className="items-summary">
               <h3>Line Items</h3>
               <ul className="items-list">
-                {purchase.lineItems.map((line) => (
+                {(purchase.lineItems || []).map((line) => (
                   <li key={line.id}>
                     <span>{line.product?.name || `Product #${line.productId}`}</span>
                     <span>x{line.quantity}</span>

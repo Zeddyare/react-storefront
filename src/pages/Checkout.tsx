@@ -6,6 +6,8 @@ import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
 import '../styles/Checkout.css';
 
+const CHECKOUT_SNAPSHOT_PREFIX = 'checkout_snapshot:';
+
 export default function Checkout() {
   const { items, total } = useCart();
   const [error, setError] = useState<string | null>(null);
@@ -17,13 +19,26 @@ export default function Checkout() {
 
   const fetchClientSecret = useCallback(async () => {
     try {
+      const lineItems = items.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+      }));
+
       const data = await api.createCheckoutSession({
         cartTotal: total,
-        items: items.map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-        })),
+        items: lineItems,
       });
+
+      // Persist a server-session-keyed snapshot for Confirmation fallback.
+      localStorage.setItem(
+        `${CHECKOUT_SNAPSHOT_PREFIX}${data.sessionId}`,
+        JSON.stringify({
+          sessionId: data.sessionId,
+          purchaseTotal: total,
+          lineItems,
+        })
+      );
+
       return data.clientSecret;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to create Stripe session';
