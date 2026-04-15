@@ -79,6 +79,13 @@ export default function Confirmation() {
     );
   }
 
+  const resolvedTotal =
+    typeof purchase?.purchaseTotal === 'number'
+      ? purchase.purchaseTotal
+      : typeof (purchase as any)?.purchase_total === 'number'
+        ? (purchase as any).purchase_total
+        : null;
+
   return (
     <section className="confirmation-container">
       <article className="confirmation-card arcane-card fade-in">
@@ -127,7 +134,7 @@ export default function Confirmation() {
 
             <div className="order-total">
               <span>Total</span>
-              <span>${purchase.purchaseTotal.toFixed(2)}</span>
+              <span>{resolvedTotal !== null ? `$${resolvedTotal.toFixed(2)}` : 'N/A'}</span>
             </div>
           </>
         )}
